@@ -314,6 +314,7 @@ class Client:
         self._rollout_update_known: bool = rollout_update_known
         self._rollout_all_guilds: bool = rollout_all_guilds
         self._application_commands_to_add: Set[BaseApplicationCommand] = set()
+        self._autocomplete_checker: bool = options.pop("autocomplete_checker", True)
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -1947,10 +1948,11 @@ class Client:
                 _log.debug(f"nextcord.Client: Autocomplete for command %s received.", app_cmd.name)
                 await app_cmd.call_autocomplete_from_interaction(interaction)  # type: ignore
             else:
-                raise ValueError(
-                    f"Received autocomplete interaction for {interaction.data['name']} but command isn't "
-                    f"found/associated!"
-                )
+                if self._autocomplete_checker:
+                    raise ValueError(
+                        f"Received autocomplete interaction for {interaction.data['name']} but command isn't "
+                        f"found/associated!"
+                    )
 
     def get_application_command(self, command_id: int) -> Optional[BaseApplicationCommand]:
         """Gets an application command from the cache that has the given command ID.
